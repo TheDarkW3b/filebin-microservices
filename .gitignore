@@ -1,0 +1,37 @@
+# Java
+**/target/
+**/*.class
+**/*.jar
+**/*.war
+**/*.log
+
+# Maven
+.mvn/
+.settings/
+.idea/
+*.iml
+
+# Node.js (Frontend)
+filebin-frontend/node_modules/
+filebin-frontend/dist/
+filebin-frontend/build/
+filebin-frontend/.env*
+filebin-frontend/.next/
+
+# Docker-related
+**/.env
+loki-data/
+mongo-data/
+**/files/
+
+# Logs
+*.log
+**/*.log
+
+# Mac & OS-specific
+.DS_Store
+Thumbs.db
+
+# Vim & swap files
+*.swp
+*.swo

@@ -1,0 +1,57 @@
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      default-filters:
+        - PreserveHostHeader
+
+server:
+  port: 8080
+
+filebin:
+  secret-key: ${FILEBIN_SECRET_KEY:NOIRS_FILEBIN_APPLICATION_IS_BEST_IN_THE_WORLD}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka:password@localhost:8761/eureka
+
+management:
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http:
+          server:
+            requests: true
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0
+
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
+
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+logging:
+  level:
+    root: INFO
+    org.springframework.cloud.gateway.route.RouteDefinitionLocator: INFO
+    org.springframework.cloud.gateway: TRACE
+  file:
+    name: /var/log/filebin/user-service.log
+  pattern:
+    console: "{ \"timestamp\": \"%d{yyyy-MM-dd HH:mm:ss}\", \"level\": \"%p\", \"service\": \"%X{spring.application.name}\", \"message\": \"%m\" }"
+
+

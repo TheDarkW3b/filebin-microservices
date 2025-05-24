@@ -1,0 +1,55 @@
+spring:
+  application:
+    name: file-service
+
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/filebin-file
+
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+server:
+  port: 0
+
+filebin:
+  uploads:
+    files: files
+  secret-key: ${FILEBIN_SECRET_KEY:NOIRS_FILEBIN_APPLICATION_IS_BEST_IN_THE_WORLD}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka:password@localhost:8761/eureka
+
+management:
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0
+
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
+
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+logging:
+  level:
+    org.springframework: DEBUG
+    ROOT: INFO
+  file:
+    name: /var/log/filebin/user-service.log
+  pattern:
+    console: "{ \"timestamp\": \"%d{yyyy-MM-dd HH:mm:ss}\", \"level\": \"%p\", \"service\": \"%X{spring.application.name}\", \"message\": \"%m\" }"
+

@@ -1,0 +1,70 @@
+spring:
+  application:
+    name: notification-service
+
+  kafka:
+    consumer:
+      group-id: notification-group
+      bootstrap-servers: localhost:9093
+      auto-offset-reset: earliest
+      enable-auto-commit: true
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+  thymeleaf:
+      cache: false
+      mode: HTML
+      prefix: classpath:/templates/
+      suffix: .html
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: <YOUR_GMAIL>@gmail.com
+    password: <GENERATED_PASSWORD>
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+server:
+  port: 0
+
+kafka-topic:
+  user-update: user-update-topic
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka:password@localhost:8761/eureka
+
+management:
+  tracing:
+    enabled: true
+    sampling:
+      probability: 1.0
+
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
+
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+logging:
+  level:
+    org.springframework: DEBUG
+    ROOT: INFO
+  file:
+    name: /var/log/filebin/user-service.log
+  pattern:
+    console: "{ \"timestamp\": \"%d{yyyy-MM-dd HH:mm:ss}\", \"level\": \"%p\", \"service\": \"%X{spring.application.name}\", \"message\": \"%m\" }"

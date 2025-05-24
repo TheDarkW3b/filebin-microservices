@@ -1,0 +1,17 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb://mongo:27017/filebin-paste
+
+server:
+  port: 8080
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka:password@eureka:8761/eureka
+
+management:
+  zipkin:
+    tracing:
+      endpoint: http://jaeger:9411/api/v2/spans

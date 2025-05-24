@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Update Notification</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7fc;
+            margin: 0;
+            padding: 0;
+        }
+        .email-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 30px auto;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 0 25px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .email-header {
+            background-color: #4b5c73;
+            color: #ffffff;
+            padding: 20px;
+            text-align: center;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+        }
+        .email-header h1 {
+            margin: 0;
+            font-size: 26px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        .email-header img {
+            width: 40px;
+            margin-bottom: 15px;
+        }
+        .email-content {
+            padding: 30px;
+            color: #333333;
+            line-height: 1.7;
+            font-size: 16px;
+        }
+        .email-content h2 {
+            color: #4b5c73;
+            font-size: 22px;
+        }
+        .email-content p {
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #6c757d;
+            color: #ffffff;
+            padding: 12px 28px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 25px;
+            transition: background-color 0.3s ease;
+        }
+        .button:hover {
+            background-color: #5a636a;
+        }
+        .email-footer {
+            background-color: #f1f1f1;
+            padding: 25px;
+            text-align: center;
+            font-size: 14px;
+            color: #888888;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+        }
+        .footer-links a {
+            color: #6c757d;
+            text-decoration: none;
+            margin: 0 10px;
+            font-weight: bold;
+        }
+        .footer-links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<div class="email-container">
+    <div class="email-header">
+        <img src="https://www.filebin.com/logo.png" alt="FileBin Logo">
+        <h1>Account Update Notification</h1>
+    </div>
+    <div class="email-content">
+        <h2>Hello, <span th:text="${username}">[Username]</span>!</h2>
+        <p>Your account details have been updated successfully. If you didn’t make these changes, please <a href="mailto:noirmorningstarr@gmail.com">contact support</a> immediately.</p>
+        <p>To ensure your account is secure, we recommend reviewing your settings regularly.</p>
+        <a href="mailto:noirmorningstarr@gmail.com" class="button">Contact Support</a>
+    </div>
+    <div class="email-footer">
+        <p>&copy; 2025 FileBin. All Rights Reserved.</p>
+        <div class="footer-links">
+            <a href="https://www.filebin.com/terms">Terms</a> |
+            <a href="https://www.filebin.com/privacy">Privacy</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

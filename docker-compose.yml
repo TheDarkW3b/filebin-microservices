@@ -1,0 +1,240 @@
+services:
+  eureka:
+    container_name: discovery-server
+    build:
+      context: ./discovery-server
+    ports:
+      - '8761:8761'
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - filebin-network
+
+  gateway:
+    container_name: api-gateway
+    build:
+      context: ./api-gateway
+    ports:
+      - '8080:8080'
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - OTEL_TRACES_EXPORTER=jaeger
+      - OTEL_EXPORTER=jaeger
+      - OTEL_EXPORTER_JAEGER_ENDPOINT=http://jaeger:14250
+      - OTEL_SERVICE_NAME=api-gateway
+      - LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY=TRACE
+    depends_on:
+      - eureka
+      - jaeger
+    networks:
+      - filebin-network
+
+  user-service:
+    container_name: user-service
+    build:
+      context: ./user-service
+    ports:
+      - '8081:8080'
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - OTEL_TRACES_EXPORTER=jaeger
+      - OTEL_EXPORTER=jaeger
+      - OTEL_EXPORTER_JAEGER_ENDPOINT=http://jaeger:14250
+      - OTEL_SERVICE_NAME=user-service
+    depends_on:
+      - mongo
+      - eureka
+      - jaeger
+    volumes:
+      - ./user-service/images:/app/images
+    networks:
+      - filebin-network
+
+  file-service:
+    container_name: file-service
+    build:
+      context: ./file-service
+    ports:
+      - '8082:8080'
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - OTEL_TRACES_EXPORTER=jaeger
+      - OTEL_EXPORTER=jaeger
+      - OTEL_EXPORTER_JAEGER_ENDPOINT=http://jaeger:14250
+      - OTEL_SERVICE_NAME=file-service
+    depends_on:
+      - mongo
+      - eureka
+      - jaeger
+    volumes:
+      - ./file-service/files:/app/files
+    networks:
+      - filebin-network
+    cap_add:
+      - NET_ADMIN
+
+  paste-service:
+    container_name: paste-service
+    build:
+      context: ./paste-service
+    ports:
+      - '8083:8080'
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - OTEL_TRACES_EXPORTER=jaeger
+      - OTEL_EXPORTER=jaeger
+      - OTEL_EXPORTER_JAEGER_ENDPOINT=http://jaeger:14250
+      - OTEL_SERVICE_NAME=paste-service
+    depends_on:
+      - mongo
+      - eureka
+      - jaeger
+    networks:
+      - filebin-network
+
+  notification-service:
+    container_name: notification-service
+    build:
+      context: ./notification-service
+    ports:
+      - '8084:8080'
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9093
+      - SPRING_KAFKA_CONSUMER_GROUP_ID=notification-group
+      - OTEL_TRACES_EXPORTER=jaeger
+      - OTEL_EXPORTER=jaeger
+      - OTEL_EXPORTER_JAEGER_ENDPOINT=http://jaeger:14250
+      - OTEL_SERVICE_NAME=notification-service
+    depends_on:
+      - kafka
+      - eureka
+      - jaeger
+    networks:
+      - filebin-network
+
+  kafka:
+    container_name: kafka
+    image: wurstmeister/kafka:latest
+    ports:
+      - "9093:9093"
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9093,PLAINTEXT_INTERNAL://kafka:29092
+      - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9093,PLAINTEXT_INTERNAL://0.0.0.0:29092
+      - KAFKA_LISTENER_SECURITY_PROTOCOL=PLAINTEXT
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT, PLAINTEXT_INTERNAL:PLAINTEXT
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+      - KAFKA_TRANSACTION_STATE_LOG_MIN_ISR=1
+      - KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR=1
+      - KAFKA_LISTENER_NAME_INTERNAL_PORT=29092
+    depends_on:
+      - zookeeper
+    networks:
+      - filebin-network
+    mem_limit: 512M
+    cpus: 0.5
+
+  zookeeper:
+    container_name: zookeeper
+    image: wurstmeister/zookeeper:latest
+    ports:
+      - "2181:2181"
+    networks:
+      - filebin-network
+
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - filebin-network
+
+  filebin-frontend:
+    container_name: filebin-frontend
+    build:
+      context: ./filebin-frontend
+    ports:
+      - '3000:80'
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    depends_on:
+      - gateway
+    networks:
+      - filebin-network
+    mem_limit: 512M
+    cpus: 0.5
+
+  jaeger:
+    container_name: jaeger
+    image: jaegertracing/all-in-one:1.44
+    environment:
+      - COLLECTOR_ZIPKIN_HTTP_HTTP_PORT=9411
+      - JAEGER_METRICS_HTTP_PORT=14268
+      - JAEGER_HEALTH_HTTP_PORT=5778
+      - JAEGER_PROMETHEUS_HTTP_PORT=14250
+    ports:
+      - "5775:5775/udp"
+      - "6831:6831/udp"
+      - "6832:6832/udp"
+      - "5778:5778"
+      - "16686:16686"   # Jaeger UI
+      - "14268:14268"   # Metrics for Prometheus
+      - "14250:14250"   # Prometheus exporter endpoint
+      - "9411:9411"     # Zipkin-compatible endpoint
+      - "14269:14269"   # Admin server (metrics endpoint here)
+    networks:
+      - filebin-network
+    mem_limit: 512M
+    cpus: 0.5
+
+  prometheus:
+    container_name: prometheus
+    image: prom/prometheus:latest
+    ports:
+      - '9090:9090'
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - filebin-network
+    mem_limit: 512M
+    cpus: 0.5
+
+  loki:
+    container_name: loki
+    image: grafana/loki:latest
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki-data:/loki
+      - ./loki-config.yml:/etc/loki/loki-config.yml
+    command: -config.file=/etc/loki/loki-config.yml
+    networks:
+      - filebin-network
+    mem_limit: 512M
+    cpus: 0.5
+
+  promtail:
+    container_name: promtail
+    image: grafana/promtail:latest
+    volumes:
+      - ./promtail-config.yml:/etc/promtail/config.yml
+      - /var/log:/var/log
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      - filebin-network
+    mem_limit: 512M
+    cpus: 0.3
+
+networks:
+  filebin-network:
+    driver: bridge
+
+volumes:
+  mongo-data:
+    driver: local
